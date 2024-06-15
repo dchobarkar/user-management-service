@@ -7,7 +7,7 @@ import { UserService } from './user.service';
 export class BlockController {
   constructor(private readonly userService: UserService) {}
 
-  @Put('/block/:blockedUserId')
+  @Put('/:blockedUserId')
   async blockUser(
     @Req() req: Request,
     @Param('blockedUserId', ParseIntPipe) blockedUserId: number,
@@ -16,7 +16,7 @@ export class BlockController {
     return this.userService.blockUser(userId, blockedUserId);
   }
 
-  @Put('/unblock/:blockedUserId')
+  @Put('/:blockedUserId/unblock')
   async unblockUser(
     @Req() req: Request,
     @Param('blockedUserId', ParseIntPipe) blockedUserId: number,

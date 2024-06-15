@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserModule } from './user/user.module';
       inject: [ConfigService],
     }),
     UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
