@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,21 +13,32 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.userRepository.create(createUserDto);
+    await this.cacheManager.del('users');
     return this.userRepository.save(user);
   }
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    const cachedUsers = await this.cacheManager.get<User[]>('users');
+    if (cachedUsers) return cachedUsers;
+
+    const users = await this.userRepository.find();
+    await this.cacheManager.set('users', users);
+    return users;
   }
 
   async findOne(id: number): Promise<User> {
+    const cachedUser = await this.cacheManager.get<User>(`user-${id}`);
+    if (cachedUser) return cachedUser;
+
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException(`User with ID ${id} not found`);
 
+    await this.cacheManager.set(`user-${id}`, user);
     return user;
   }
 
@@ -34,6 +47,8 @@ export class UserService {
 
     const updatedUser = await this.findOne(id);
 
+    await this.cacheManager.set(`user-${id}`, updatedUser);
+    await this.cacheManager.del('users');
     return updatedUser;
   }
 
@@ -41,6 +56,9 @@ export class UserService {
     const result = await this.userRepository.delete(id);
     if (result.affected === 0)
       throw new NotFoundException(`User with ID ${id} not found`);
+
+    await this.cacheManager.del(`user-${id}`);
+    await this.cacheManager.del('users');
   }
 
   async search(
@@ -88,6 +106,8 @@ export class UserService {
     }
 
     user.blockedUsers.push(blockedUserId);
+    await this.cacheManager.set(`user-${userId}`, user);
+    await this.cacheManager.del('users');
     return this.userRepository.save(user);
   }
 
@@ -96,6 +116,8 @@ export class UserService {
 
     user.blockedUsers = user.blockedUsers.filter((id) => id !== blockedUserId);
 
+    await this.cacheManager.set(`user-${userId}`, user);
+    await this.cacheManager.del('users');
     return this.userRepository.save(user);
   }
 }

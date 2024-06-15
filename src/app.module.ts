@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 
 import { UserModule } from './user/user.module';
 
@@ -8,6 +9,11 @@ import { UserModule } from './user/user.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 5,
+      max: 10,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
