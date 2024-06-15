@@ -129,8 +129,8 @@ export class UserService {
     return query.getMany();
   }
 
-  async blockUser(userId: number, blockedUserId: number): Promise<User> {
-    if (userId == blockedUserId)
+  async blockUser(userId: number, blockedUserId: number): Promise<void> {
+    if (userId === blockedUserId)
       throw new BadRequestException(`You cannot block yourself`);
 
     const blockedUser = await this.findOne(blockedUserId);
@@ -141,17 +141,17 @@ export class UserService {
 
     const user = await this.findOne(userId);
     if (user.blockedUsers.includes(blockedUserId))
-      throw new NotFoundException(
+      throw new ConflictException(
         `User with ID ${blockedUserId} is already blocked`,
       );
 
     user.blockedUsers.push(blockedUserId);
     await this.cacheManager.set(`user-${userId}`, user);
     await this.cacheManager.del('users');
-    return this.userRepository.save(user);
+    await this.userRepository.save(user);
   }
 
-  async unblockUser(userId: number, blockedUserId: number): Promise<User> {
+  async unblockUser(userId: number, blockedUserId: number): Promise<void> {
     const user = await this.findOne(userId);
     if (!user.blockedUsers.includes(blockedUserId)) {
       throw new NotFoundException(
@@ -162,6 +162,6 @@ export class UserService {
     user.blockedUsers = user.blockedUsers.filter((id) => id !== blockedUserId);
     await this.cacheManager.set(`user-${userId}`, user);
     await this.cacheManager.del('users');
-    return this.userRepository.save(user);
+    await this.userRepository.save(user);
   }
 }

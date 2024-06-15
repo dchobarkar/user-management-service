@@ -1,7 +1,7 @@
 import { Controller, Put, Param, Req, ParseIntPipe } from '@nestjs/common';
 import { Request } from 'express';
 
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Controller('block')
 export class BlockController {
