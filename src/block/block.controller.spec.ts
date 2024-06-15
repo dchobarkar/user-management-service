@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BlockController } from './block.controller';
-import { UserService } from '../user/user.service'; // Use relative path
+import { UserService } from '../user/user.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('BlockController', () => {
@@ -33,7 +33,7 @@ describe('BlockController', () => {
     it('should call userService.blockUser with correct parameters', async () => {
       const req = { user: { id: 1 } };
       const params = { blockedUserId: '2' };
-      await controller.blockUser(req as any, +params.blockedUserId); // Convert to number
+      await controller.blockUser(req as any, +params.blockedUserId);
       expect(userService.blockUser).toHaveBeenCalledWith(1, 2);
     });
 
@@ -69,7 +69,7 @@ describe('BlockController', () => {
     it('should call userService.unblockUser with correct parameters', async () => {
       const req = { user: { id: 1 } };
       const params = { blockedUserId: '2' };
-      await controller.unblockUser(req as any, +params.blockedUserId); // Convert to number
+      await controller.unblockUser(req as any, +params.blockedUserId);
       expect(userService.unblockUser).toHaveBeenCalledWith(1, 2);
     });
 
