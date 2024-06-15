@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, NotFoundException } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 
@@ -7,8 +7,12 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('token')
-  getToken(@Query('userId') userId: number): { token: string } {
-    const token = this.authService.generateToken(userId);
-    return { token };
+  async getToken(@Query('userId') userId: number): Promise<{ token: string }> {
+    try {
+      const token = await this.authService.generateToken(userId);
+      return { token };
+    } catch (error) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
   }
 }
