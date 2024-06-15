@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -17,6 +23,14 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.userRepository.findOne({
+      where: { username: createUserDto.username },
+    });
+    if (existingUser)
+      throw new ConflictException(
+        `Username ${createUserDto.username} already exists`,
+      );
+
     const user = this.userRepository.create(createUserDto);
     await this.cacheManager.del('users');
     return this.userRepository.save(user);
@@ -43,10 +57,21 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+
+    if (updateUserDto.username && updateUserDto.username !== user.username) {
+      const existingUser = await this.userRepository.findOne({
+        where: { username: updateUserDto.username },
+      });
+      if (existingUser)
+        throw new ConflictException(
+          `Username ${updateUserDto.username} already exists`,
+        );
+    }
+
     await this.userRepository.update(id, updateUserDto);
 
     const updatedUser = await this.findOne(id);
-
     await this.cacheManager.set(`user-${id}`, updatedUser);
     await this.cacheManager.del('users');
     return updatedUser;
@@ -105,13 +130,20 @@ export class UserService {
   }
 
   async blockUser(userId: number, blockedUserId: number): Promise<User> {
-    const user = await this.findOne(userId);
+    if (userId == blockedUserId)
+      throw new BadRequestException(`You cannot block yourself`);
 
-    if (user.blockedUsers.includes(blockedUserId)) {
+    const blockedUser = await this.findOne(blockedUserId);
+    if (!blockedUser)
+      throw new NotFoundException(
+        `User with ID ${blockedUserId} does not exist`,
+      );
+
+    const user = await this.findOne(userId);
+    if (user.blockedUsers.includes(blockedUserId))
       throw new NotFoundException(
         `User with ID ${blockedUserId} is already blocked`,
       );
-    }
 
     user.blockedUsers.push(blockedUserId);
     await this.cacheManager.set(`user-${userId}`, user);
@@ -121,9 +153,13 @@ export class UserService {
 
   async unblockUser(userId: number, blockedUserId: number): Promise<User> {
     const user = await this.findOne(userId);
+    if (!user.blockedUsers.includes(blockedUserId)) {
+      throw new NotFoundException(
+        `User with ID ${blockedUserId} is not blocked`,
+      );
+    }
 
     user.blockedUsers = user.blockedUsers.filter((id) => id !== blockedUserId);
-
     await this.cacheManager.set(`user-${userId}`, user);
     await this.cacheManager.del('users');
     return this.userRepository.save(user);
