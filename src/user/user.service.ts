@@ -62,10 +62,14 @@ export class UserService {
   }
 
   async search(
+    requestingUserId: number,
     username?: string,
     minAge?: number,
     maxAge?: number,
   ): Promise<User[]> {
+    const requestingUser = await this.findOne(requestingUserId);
+    const blockedUsers = requestingUser.blockedUsers;
+
     const query = this.userRepository.createQueryBuilder('user');
 
     if (username) {
@@ -91,6 +95,10 @@ export class UserService {
         currentDate.getDate(),
       );
       query.andWhere('user.birthdate >= :maxBirthdate', { maxBirthdate });
+    }
+
+    if (blockedUsers.length > 0) {
+      query.andWhere('user.id NOT IN (:...blockedUsers)', { blockedUsers });
     }
 
     return query.getMany();

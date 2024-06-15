@@ -7,8 +7,10 @@ import {
   Param,
   Delete,
   Query,
+  Req,
   ParseIntPipe,
 } from '@nestjs/common';
+import { Request } from 'express';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -30,13 +32,20 @@ export class UserController {
 
   @Get('search')
   search(
+    @Req() req: Request,
     @Query('username') username?: string,
     @Query('minAge') minAge?: string,
     @Query('maxAge') maxAge?: string,
   ) {
+    const userId = req['user'].id;
     const minAgeNumber = minAge ? parseInt(minAge, 10) : undefined;
     const maxAgeNumber = maxAge ? parseInt(maxAge, 10) : undefined;
-    return this.userService.search(username, minAgeNumber, maxAgeNumber);
+    return this.userService.search(
+      userId,
+      username,
+      minAgeNumber,
+      maxAgeNumber,
+    );
   }
 
   @Get(':id')

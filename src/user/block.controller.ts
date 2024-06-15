@@ -1,4 +1,5 @@
-import { Controller, Put, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Put, Param, Req, ParseIntPipe } from '@nestjs/common';
+import { Request } from 'express';
 
 import { UserService } from './user.service';
 
@@ -6,19 +7,21 @@ import { UserService } from './user.service';
 export class BlockController {
   constructor(private readonly userService: UserService) {}
 
-  @Put(':userId/block/:blockedUserId')
+  @Put('/block/:blockedUserId')
   async blockUser(
-    @Param('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
     @Param('blockedUserId', ParseIntPipe) blockedUserId: number,
   ) {
+    const userId = req['user'].id;
     return this.userService.blockUser(userId, blockedUserId);
   }
 
-  @Put(':userId/unblock/:blockedUserId')
+  @Put('/unblock/:blockedUserId')
   async unblockUser(
-    @Param('userId', ParseIntPipe) userId: number,
+    @Req() req: Request,
     @Param('blockedUserId', ParseIntPipe) blockedUserId: number,
   ) {
+    const userId = req['user'].id;
     return this.userService.unblockUser(userId, blockedUserId);
   }
 }
