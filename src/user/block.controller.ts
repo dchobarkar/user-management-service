@@ -1,4 +1,4 @@
-import { Controller, Put, Param } from '@nestjs/common';
+import { Controller, Put, Param, ParseIntPipe } from '@nestjs/common';
 
 import { UserService } from './user.service';
 
@@ -8,17 +8,17 @@ export class BlockController {
 
   @Put(':userId/block/:blockedUserId')
   async blockUser(
-    @Param('userId') userId: number,
-    @Param('blockedUserId') blockedUserId: string,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('blockedUserId', ParseIntPipe) blockedUserId: number,
   ) {
-    return this.userService.blockUser(userId, parseInt(blockedUserId, 10));
+    return this.userService.blockUser(userId, blockedUserId);
   }
 
   @Put(':userId/unblock/:blockedUserId')
   async unblockUser(
-    @Param('userId') userId: number,
-    @Param('blockedUserId') blockedUserId: string,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('blockedUserId', ParseIntPipe) blockedUserId: number,
   ) {
-    return this.userService.unblockUser(userId, parseInt(blockedUserId, 10));
+    return this.userService.unblockUser(userId, blockedUserId);
   }
 }
