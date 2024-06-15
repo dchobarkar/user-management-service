@@ -1,73 +1,278 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# User Management Microservice
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a Nest.js microservice for managing users. It includes caching for frequently accessed data, supports searching users, and allows users to block other users so that ignored users are not visible in search results. The service uses PostgreSQL as the database.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Project Setup
 
-## Description
+### Prerequisites
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js (v14 or later)
+- PostgreSQL
+- npm (v6 or later)
 
-## Installation
+### Installation
+
+1. Clone the repository:
 
 ```bash
-$ npm install
+git clone https://github.com/dchobarkar/user-management-microservice.git
+cd user-management-microservice
 ```
 
-## Running the app
+2. Install dependencies:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Test
+3. Set up environment variables:
+
+Create a `.env` file in the root directory and add the following:
+
+```
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=your_db_user
+DATABASE_PASSWORD=your_db_password
+DATABASE_NAME=your_db_name
+JWT_SECRET_KEY=your_jwt_secret
+```
+
+4. Start the application:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Support
+## Endpoints
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### AuthController
 
-## Stay in touch
+#### 1. Generate JWT Token
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Endpoint:** `GET /auth/token`
 
-## License
+**Description:** Generates a JWT token for a given user ID. This token is used to authenticate subsequent requests.
 
-Nest is [MIT licensed](LICENSE).
+**Request:**
+
+```json
+{
+  "id": 1
+}
+```
+
+**Response:**
+
+```json
+{
+  "token": "your_generated_jwt_token"
+}
+```
+
+### UserController
+
+#### 2. Create User
+
+**Endpoint:** `POST /users`
+
+**Description:** Creates a new user.
+
+**Request:**
+
+```json
+{
+  "name": "John",
+  "surname": "Doe",
+  "username": "johndoe",
+  "birthdate": "1990-01-01"
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "name": "John",
+  "surname": "Doe",
+  "username": "johndoe",
+  "birthdate": "1990-01-01"
+}
+```
+
+#### 3. Get All Users
+
+**Endpoint:** `GET /users`
+
+**Description:** Retrieves all users.
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "John",
+    "surname": "Doe",
+    "username": "johndoe",
+    "birthdate": "1990-01-01"
+  },
+  {
+    "id": 2,
+    "name": "Jane",
+    "surname": "Smith",
+    "username": "janesmith",
+    "birthdate": "1985-05-15"
+  }
+]
+```
+
+#### 4. Get User by ID
+
+**Endpoint:** `GET /users/:id`
+
+**Description:** Retrieves a user by their ID.
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "name": "John",
+  "surname": "Doe",
+  "username": "johndoe",
+  "birthdate": "1990-01-01"
+}
+```
+
+#### 5. Update User
+
+**Endpoint:** `PUT /users/:id`
+
+**Description:** Updates a user's details.
+
+**Request:**
+
+```json
+{
+  "name": "John",
+  "surname": "Doe",
+  "username": "johndoe123",
+  "birthdate": "1990-01-01"
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "name": "John",
+  "surname": "Doe",
+  "username": "johndoe123",
+  "birthdate": "1990-01-01"
+}
+```
+
+#### 6. Delete User
+
+**Endpoint:** `DELETE /users/:id`
+
+**Description:** Deletes a user by their ID.
+
+**Response:**
+
+```json
+{
+  "message": "User deleted successfully"
+}
+```
+
+#### 7. Search Users
+
+**Endpoint:** `GET /users/search`
+
+**Description:** Searches for users by username and/or age range. Users who have been blocked by the requester are not included in the results.
+
+**Query Parameters:**
+
+- `username` (optional)
+- `minAge` (optional)
+- `maxAge` (optional)
+
+**Request:**
+
+```
+GET /users/search?username=johndoe&minAge=25&maxAge=35
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": 2,
+    "name": "Jane",
+    "surname": "Smith",
+    "username": "janesmith",
+    "birthdate": "1985-05-15"
+  }
+]
+```
+
+### BlockController
+
+#### 8. Block User
+
+**Endpoint:** `PUT /block/:blockedUserId`
+
+**Description:** Blocks a user, preventing them from appearing in search results for the requester.
+
+**Request:**
+
+```
+POST /block/2
+```
+
+**Response:**
+
+```json
+{
+  "message": "User blocked successfully"
+}
+```
+
+#### 9. Unblock User
+
+**Endpoint:** `PUT /block/:blockedUserId/unblock`
+
+**Description:** Unblocks a previously blocked user.
+
+**Request:**
+
+```
+POST /block/2/unblock
+```
+
+**Response:**
+
+```json
+{
+  "message": "User unblocked successfully"
+}
+```
+
+## Testing
+
+To run the tests, use the following command:
+
+```bash
+npm run test
+```
+
+## Contact
+
+Darshan Chobarkar - [@dchobarkar](https://www.linkedin.com/in/dchobarkar/) - [@barbatos\_\_08](https://twitter.com/barbatos__08) - contact@darshanwebdev.com
+
+Project Link: [https://github.com/dchobarkar/user-management-system](https://github.com/dchobarkar/user-management-system)
