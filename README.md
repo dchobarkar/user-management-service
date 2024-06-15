@@ -15,8 +15,8 @@ This project is a Nest.js microservice for managing users. It includes caching f
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/dchobarkar/user-management-microservice.git
-cd user-management-microservice
+git clone https://github.com/dchobarkar/user-management-system.git
+cd user-management-system
 ```
 
 2. Install dependencies:
