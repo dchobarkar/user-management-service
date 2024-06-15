@@ -57,7 +57,7 @@ export class UserService {
     }
 
     const currentDate = new Date();
-    if (minAge) {
+    if (minAge !== undefined) {
       const minBirthdate = new Date(
         currentDate.getFullYear() - minAge,
         currentDate.getMonth(),
@@ -66,7 +66,7 @@ export class UserService {
       query.andWhere('user.birthdate <= :minBirthdate', { minBirthdate });
     }
 
-    if (maxAge) {
+    if (maxAge !== undefined) {
       const maxBirthdate = new Date(
         currentDate.getFullYear() - maxAge,
         currentDate.getMonth(),
